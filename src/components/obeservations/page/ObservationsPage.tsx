@@ -1,10 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { Settings } from "lucide-react-native";
+import { Plus, Settings } from "lucide-react-native";
+import { useState } from "react";
 import { Text, View } from "react-native";
+import LizardForm from "../components/LizardsForm";
 
 export default function ObservationsPage() {
   const { signOut } = useAuthActions();
+  const [formOpen, setFormOpen] = useState(false);
+
   return (
     <>
       <View className="flex items-end pt-20 pr-2 bg-[#d3d3d3]">
@@ -12,6 +16,7 @@ export default function ObservationsPage() {
           <Settings />
         </Button>
       </View>
+
       <View className="flex min-h-screen items-center justify-center bg-[#d3d3d3] p-4">
         <View className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <View>
@@ -22,9 +27,15 @@ export default function ObservationsPage() {
               Cadastre os seus calangos
             </Text>
           </View>
-          {/* <AddAluno /> */}
+
+          <Button onPress={() => setFormOpen(true)}>
+            <Plus size={18} />
+            <Text>Novo calango</Text>
+          </Button>
         </View>
       </View>
+
+      <LizardForm open={formOpen} onOpenChange={setFormOpen} />
     </>
   );
 }
