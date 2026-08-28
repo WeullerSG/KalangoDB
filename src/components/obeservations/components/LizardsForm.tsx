@@ -1,20 +1,20 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as Crypto from "expo-crypto";
@@ -23,6 +23,7 @@ import { Controller, useForm } from "react-hook-form";
 import { ScrollView, Text, View } from "react-native";
 import * as z from "zod";
 
+import { GetLocalization } from "@/hooks/getLocalization";
 import { useMutation } from "convex/react";
 import { MapPin, PawPrint, Ruler, Thermometer } from "lucide-react-native";
 import { api } from "../../../../convex/_generated/api";
@@ -263,6 +264,39 @@ export default function LizardForm({
       setIsSubmitting(false);
     }
   };
+
+  const [dados, setDados] = useState<{
+    endereco?: string;
+    cep?: string;
+    lat?: number;
+    lng?: number;
+  }>({});
+
+  const [isLocating, setIsLocating] = useState(false);
+  const [locError, setLocError] = useState("");
+
+  async function handlePegarLocalizacao() {
+    setIsLocating(true);
+    setLocError("");
+    try {
+      const resultado = await GetLocalization();
+      setDados(resultado);
+
+      if (resultado.endereco) form.setValue("endereco", resultado.endereco);
+      if (resultado.cep) form.setValue("cep", resultado.cep);
+      if (resultado.lat !== undefined)
+        form.setValue("lat", toDisplay(resultado.lat));
+      if (resultado.lng !== undefined)
+        form.setValue("lng", toDisplay(resultado.lng));
+    } catch (e) {
+      setLocError(
+        "Não foi possível obter a localização. Preencha manualmente.",
+      );
+      console.error(e);
+    } finally {
+      setIsLocating(false);
+    }
+  }
 
   const handleSubmitWithTabSwitch = form.handleSubmit(
     handleSubmit,
@@ -512,6 +546,33 @@ export default function LizardForm({
 
           {tab === "local" && (
             <View className="gap-4">
+              <Button
+                variant="outline"
+                onPress={handlePegarLocalizacao}
+                disabled={isLocating}
+                className="flex flex-row items-center gap-2 self-start"
+              >
+                <MapPin size={16} />
+                <Text>
+                  {isLocating
+                    ? "Localizando..."
+                    : "Usar minha localização atual"}
+                </Text>
+              </Button>
+
+              {dados.lat !== undefined && !isLocating && !locError && (
+                <View className="bg-green-50 px-3 py-2 rounded-md">
+                  <Text className="text-sm text-green-700">
+                    📍 Localização capturada
+                    {dados.endereco ? `: ${dados.endereco}` : ""}
+                  </Text>
+                </View>
+              )}
+
+              {locError ? (
+                <Text className="text-sm text-amber-600">{locError}</Text>
+              ) : null}
+
               <Controller
                 control={form.control}
                 name="endereco"
@@ -529,6 +590,7 @@ export default function LizardForm({
                   </View>
                 )}
               />
+
               <Controller
                 control={form.control}
                 name="cep"
@@ -546,6 +608,7 @@ export default function LizardForm({
                   </View>
                 )}
               />
+
               <View className="flex flex-row gap-3">
                 <View className="flex-1">
                   {renderDecimalField("lat", "Latitude")}

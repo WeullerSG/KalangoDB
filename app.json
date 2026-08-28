@@ -34,7 +34,13 @@
         }
       ],
       "expo-secure-store",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Permita o acesso à localização para registrar onde o calango foi observado."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
