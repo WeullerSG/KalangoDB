@@ -1,4 +1,3 @@
-// components/lizardsCard.tsx (item individual)
 import { relativeTime } from "@/lib/relativeTime";
 import { ChevronRight } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
@@ -79,7 +78,9 @@ export default function LizardsCard({ lizards, onItemPress }: CardProps) {
         <LizardListItem
           key={lizard._id}
           lizard={lizard}
-          onPress={() => onItemPress?.(lizard)}
+          onPress={() => {
+            onItemPress?.(lizard);
+          }}
         />
       ))}
     </View>

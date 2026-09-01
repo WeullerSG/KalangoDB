@@ -5,18 +5,31 @@ import { Search, Settings } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { ScrollView, Text, TextInput, View } from "react-native";
 import { api } from "../../../../convex/_generated/api";
+import { Doc } from "../../../../convex/_generated/dataModel";
 import LizardsCard from "../components/lizardsCard";
+import LizardsDetails from "./LizardsDetails";
 
 export default function ObservationsPage() {
   const { signOut } = useAuthActions();
   const calangos = useQuery(api.observations.list) || [];
   const [busca, setBusca] = useState("");
+  const [selectedLizard, setSelectedLizard] =
+    useState<Doc<"observations"> | null>(null);
 
   const filtrados = useMemo(() => {
     if (!busca.trim()) return calangos;
     const termo = busca.toLowerCase();
     return calangos.filter((c) => c.nome.toLowerCase().includes(termo));
   }, [calangos, busca]);
+
+  if (selectedLizard) {
+    return (
+      <LizardsDetails
+        lizardId={selectedLizard}
+        onBack={() => setSelectedLizard(null)}
+      />
+    );
+  }
 
   return (
     <View className="flex-1 bg-[#f2efe6]">
@@ -59,7 +72,10 @@ export default function ObservationsPage() {
         contentContainerClassName="px-4 pb-32 gap-3"
         showsVerticalScrollIndicator={false}
       >
-        <LizardsCard lizards={filtrados} />
+        <LizardsCard
+          lizards={filtrados}
+          onItemPress={(lizard) => setSelectedLizard(lizard)}
+        />
       </ScrollView>
     </View>
   );

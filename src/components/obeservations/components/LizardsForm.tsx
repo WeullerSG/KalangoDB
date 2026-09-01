@@ -478,6 +478,26 @@ export default function LizardForm({
                   </View>
                 )}
               />
+              {/* <Controller
+                control={form.control}
+                name="notedAt"
+                render={({ field }) => (
+                  <View className="gap-1">
+                    <Label nativeID="notedAt">Data e hora</Label>
+                    <DateTimeField
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      disabled={isSubmitting}
+                    />
+                    {form.formState.errors.notedAt && (
+                      <Text className="text-sm text-red-600">
+                        {form.formState.errors.notedAt.message}
+                      </Text>
+                    )}
+                  </View>
+                )}
+              /> */}
 
               <View className="flex flex-row gap-3">
                 <Controller
