@@ -1,32 +1,33 @@
-import { Button } from "@/shared/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/shared/components/ui/dialog";
-import { Form, FormField } from "@/shared/components/ui/form";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/shared/components/ui/select";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
+import * as Crypto from "expo-crypto";
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
+import { ScrollView, Text, View } from "react-native";
 import * as z from "zod";
 
-import { useAlert } from "@/shared/contexts/AlertContext";
-import { api } from "@repo/api/convex/_generated/api";
-import { Doc } from "@repo/api/convex/_generated/dataModel";
+import { GetLocalization } from "@/hooks/getLocalization";
 import { useMutation } from "convex/react";
-import { MapPin, PawPrint, Ruler, Thermometer } from "lucide-react";
+import { MapPin, PawPrint, Ruler, Thermometer } from "lucide-react-native";
+import { api } from "../../../../convex/_generated/api";
+import { Doc } from "../../../../convex/_generated/dataModel";
 
 // converte "28,5" -> 28.5 (teclado BR usa vírgula)
 function toNumber(v?: string): number | undefined {
@@ -52,27 +53,22 @@ const lizardSchema = z.object({
   nome: z.string().min(1, "Nome é obrigatório"),
   notedAt: z.string().min(1, "Data é obrigatória"),
 
-  // localização
   endereco: z.string().optional(),
   cep: z.string().optional(),
   lat: decimalString,
   lng: decimalString,
 
-  // condições
   exposicaoSol: z.string().optional(),
   sexo: z.string().optional(),
 
-  // temperaturas do momento
   tb: decimalString,
   tSubstrato: decimalString,
   tAr: decimalString,
 
-  // limites térmicos
   ctMin: decimalString,
   ctMax: decimalString,
   tPref: decimalString,
 
-  // morfometria
   crc: decimalString,
   larguraCorpo: decimalString,
   alturaCorpo: decimalString,
@@ -87,7 +83,6 @@ const lizardSchema = z.object({
 });
 
 type LizardFormData = z.infer<typeof lizardSchema>;
-
 type Tab = "geral" | "local" | "temp" | "morfo";
 
 interface AddLizards {
@@ -97,7 +92,6 @@ interface AddLizards {
   onClose?: () => void;
 }
 
-// yyyy-MM-ddThh:mm pro <input type="datetime-local">
 function timestampToLocalInput(ts?: number) {
   if (!ts) return "";
   const d = new Date(ts);
@@ -105,6 +99,23 @@ function timestampToLocalInput(ts?: number) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
     d.getHours(),
   )}:${pad(d.getMinutes())}`;
+}
+
+const exposicaoOptions = [
+  { value: "sol", label: "Sol" },
+  { value: "sombra", label: "Sombra" },
+];
+
+const sexoOptions = [
+  { value: "femea", label: "Fêmea" },
+  { value: "macho", label: "Macho" },
+];
+
+function findOption(
+  options: { value: string; label: string }[],
+  value?: string,
+) {
+  return options.find((o) => o.value === value);
 }
 
 export default function LizardForm({
@@ -124,7 +135,6 @@ export default function LizardForm({
     ? (value: boolean) => externalOnOpenChange?.(value)
     : setInternalOpen;
 
-  const { showAlert } = useAlert();
   const createObservation = useMutation(api.observations.create);
 
   const form = useForm<LizardFormData>({
@@ -213,7 +223,7 @@ export default function LizardForm({
 
     try {
       await createObservation({
-        clientId: crypto.randomUUID(),
+        clientId: Crypto.randomUUID(),
         nome: values.nome,
         notedAt: new Date(values.notedAt).getTime(),
 
@@ -246,12 +256,6 @@ export default function LizardForm({
         pataTrasEsq: toNumber(values.pataTrasEsq),
       });
 
-      showAlert({
-        variant: "default",
-        title: "Sucesso!",
-        description: `${values.nome} foi registrado com sucesso.`,
-      });
-
       handleClose();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Ocorreu um erro";
@@ -261,9 +265,42 @@ export default function LizardForm({
     }
   };
 
+  const [dados, setDados] = useState<{
+    endereco?: string;
+    cep?: string;
+    lat?: number;
+    lng?: number;
+  }>({});
+
+  const [isLocating, setIsLocating] = useState(false);
+  const [locError, setLocError] = useState("");
+
+  async function handlePegarLocalizacao() {
+    setIsLocating(true);
+    setLocError("");
+    try {
+      const resultado = await GetLocalization();
+      setDados(resultado);
+
+      if (resultado.endereco) form.setValue("endereco", resultado.endereco);
+      if (resultado.cep) form.setValue("cep", resultado.cep);
+      if (resultado.lat !== undefined)
+        form.setValue("lat", toDisplay(resultado.lat));
+      if (resultado.lng !== undefined)
+        form.setValue("lng", toDisplay(resultado.lng));
+    } catch (e) {
+      setLocError(
+        "Não foi possível obter a localização. Preencha manualmente.",
+      );
+      console.error(e);
+    } finally {
+      setIsLocating(false);
+    }
+  }
+
   const handleSubmitWithTabSwitch = form.handleSubmit(
     handleSubmit,
-    (errors: any) => {
+    (errors) => {
       if (geralFields.some((f) => errors[f])) setTab("geral");
       else if (localFields.some((f) => errors[f])) setTab("local");
       else if (tempFields.some((f) => errors[f])) setTab("temp");
@@ -280,25 +317,25 @@ export default function LizardForm({
     {
       id: "geral",
       label: "Geral",
-      icon: <PawPrint className="h-4 w-4" />,
+      icon: <PawPrint size={16} />,
       errors: geralErrors,
     },
     {
       id: "local",
       label: "Local",
-      icon: <MapPin className="h-4 w-4" />,
+      icon: <MapPin size={16} />,
       errors: localErrors,
     },
     {
       id: "temp",
       label: "Temperaturas",
-      icon: <Thermometer className="h-4 w-4" />,
+      icon: <Thermometer size={16} />,
       errors: tempErrors,
     },
     {
       id: "morfo",
       label: "Morfometria",
-      icon: <Ruler className="h-4 w-4" />,
+      icon: <Ruler size={16} />,
       errors: morfoErrors,
     },
   ];
@@ -308,45 +345,42 @@ export default function LizardForm({
     label: string,
     unit?: string,
   ) => (
-    <FormField
+    <Controller
       control={form.control}
       name={name}
       render={({ field }) => (
-        <div className="space-y-1">
-          <Label htmlFor={name}>
-            {label}{" "}
-            {unit && <span className="text-muted-foreground">({unit})</span>}
+        <View className="space-y-1">
+          <Label nativeID={name}>
+            {label} {unit ? `(${unit})` : ""}
           </Label>
           <Input
-            id={name}
+            aria-labelledby={name}
             inputMode="decimal"
             placeholder="0,0"
-            {...field}
             value={field.value ?? ""}
-            disabled={isSubmitting}
+            onChangeText={field.onChange}
+            onBlur={field.onBlur}
+            editable={!isSubmitting}
           />
           {(form.formState.errors as Record<string, { message?: string }>)[
             name
           ] && (
-            <p className="text-sm text-red-600">
+            <Text className="text-sm text-red-600">
               {
                 (form.formState.errors as Record<string, { message?: string }>)[
                   name
                 ]?.message
               }
-            </p>
+            </Text>
           )}
-        </div>
+        </View>
       )}
     />
   );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent
-        onCloseAutoFocus={() => form.reset()}
-        className="sm:max-w-[520px]"
-      >
+      <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>{notes ? "Editar calango" : "Novo calango"}</DialogTitle>
           <DialogDescription>
@@ -356,232 +390,345 @@ export default function LizardForm({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-center gap-1 rounded-lg bg-muted p-1 w-fit flex-wrap">
+        <View className="flex flex-row items-center gap-1 rounded-lg bg-muted p-1 flex-wrap">
           {tabs.map((t) => (
             <Button
               key={t.id}
-              type="button"
               variant="ghost"
-              onClick={() => setTab(t.id)}
-              className={`relative flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all ${
-                tab === t.id
-                  ? "bg-background shadow-sm text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+              onPress={() => setTab(t.id)}
+              className={`relative flex flex-row items-center gap-2 rounded-md px-3 py-2 ${
+                tab === t.id ? "bg-background" : ""
               }`}
             >
               {t.icon}
-              {t.label}
+              <Text
+                className={
+                  tab === t.id
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground"
+                }
+              >
+                {t.label}
+              </Text>
               {t.errors > 0 && (
-                <div className="absolute -top-1.5 -right-1 bg-red-600 text-white text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center leading-none">
-                  {t.errors}
-                </div>
+                <View className="absolute -top-1.5 -right-1 bg-red-600 rounded-full h-4 w-4 items-center justify-center">
+                  <Text className="text-white text-[9px] font-bold">
+                    {t.errors}
+                  </Text>
+                </View>
               )}
             </Button>
           ))}
-        </div>
+        </View>
 
-        <Form {...form}>
-          <form onSubmit={handleSubmitWithTabSwitch}>
-            <div className="py-4 space-y-4 max-h-[50vh] overflow-y-auto pr-1">
-              {error && (
-                <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
-                  {error}
-                </div>
-              )}
+        <ScrollView
+          className="max-h-[400px]"
+          contentContainerClassName="py-4 gap-4"
+          showsVerticalScrollIndicator={false}
+        >
+          {error ? (
+            <View className="bg-red-50 p-2 rounded">
+              <Text className="text-sm text-red-600">{error}</Text>
+            </View>
+          ) : null}
 
-              {tab === "geral" && (
-                <React.Fragment key="geral">
-                  <FormField
-                    control={form.control}
-                    name="nome"
-                    render={({ field }) => (
-                      <div className="space-y-1">
-                        <Label htmlFor="nome">Nome / identificação</Label>
-                        <Input
-                          id="nome"
-                          placeholder="Priscilla"
-                          {...field}
-                          disabled={isSubmitting}
-                        />
-                        {form.formState.errors.nome && (
-                          <p className="text-sm text-red-600">
-                            {form.formState.errors.nome.message}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="notedAt"
-                    render={({ field }) => (
-                      <div className="space-y-1">
-                        <Label htmlFor="notedAt">Data e hora</Label>
-                        <Input
-                          id="notedAt"
-                          type="datetime-local"
-                          {...field}
-                          disabled={isSubmitting}
-                        />
-                        {form.formState.errors.notedAt && (
-                          <p className="text-sm text-red-600">
-                            {form.formState.errors.notedAt.message}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  />
-                  <div className="grid grid-cols-2 gap-3">
-                    <FormField
-                      control={form.control}
-                      name="exposicaoSol"
-                      render={({ field }) => (
-                        <div className="space-y-1">
-                          <Label>Exposição ao sol</Label>
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecione" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="sol">Sol</SelectItem>
-                              <SelectItem value="sombra">Sombra</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
+          {tab === "geral" && (
+            <View className="gap-4">
+              <Controller
+                control={form.control}
+                name="nome"
+                render={({ field }) => (
+                  <View className="space-y-1">
+                    <Label nativeID="nome">Nome / identificação</Label>
+                    <Input
+                      aria-labelledby="nome"
+                      placeholder="Priscilla"
+                      value={field.value}
+                      onChangeText={field.onChange}
+                      onBlur={field.onBlur}
+                      editable={!isSubmitting}
                     />
-                    <FormField
-                      control={form.control}
-                      name="sexo"
-                      render={({ field }) => (
-                        <div className="space-y-1">
-                          <Label>Sexo</Label>
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecione" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="femea">Fêmea</SelectItem>
-                              <SelectItem value="macho">Macho</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
+                    {form.formState.errors.nome && (
+                      <Text className="text-sm text-red-600">
+                        {form.formState.errors.nome.message}
+                      </Text>
+                    )}
+                  </View>
+                )}
+              />
+
+              <Controller
+                control={form.control}
+                name="notedAt"
+                render={({ field }) => (
+                  <View className="space-y-1">
+                    <Label nativeID="notedAt">Data e hora</Label>
+                    <Input
+                      aria-labelledby="notedAt"
+                      value={field.value}
+                      onChangeText={field.onChange}
+                      onBlur={field.onBlur}
+                      editable={!isSubmitting}
                     />
-                  </div>
-                </React.Fragment>
-              )}
-
-              {tab === "local" && (
-                <React.Fragment key="local">
-                  <FormField
-                    control={form.control}
-                    name="endereco"
-                    render={({ field }) => (
-                      <div className="space-y-1">
-                        <Label htmlFor="endereco">Local</Label>
-                        <Input
-                          id="endereco"
-                          placeholder="Avenida Amazonas, 1720, Umuarama, Uberlândia MG"
-                          {...field}
-                          value={field.value ?? ""}
-                          disabled={isSubmitting}
-                        />
-                      </div>
+                    {form.formState.errors.notedAt && (
+                      <Text className="text-sm text-red-600">
+                        {form.formState.errors.notedAt.message}
+                      </Text>
                     )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="cep"
-                    render={({ field }) => (
-                      <div className="space-y-1">
-                        <Label htmlFor="cep">CEP</Label>
-                        <Input
-                          id="cep"
-                          placeholder="38405-302"
-                          {...field}
-                          value={field.value ?? ""}
-                          disabled={isSubmitting}
-                        />
-                      </div>
+                  </View>
+                )}
+              />
+              {/* <Controller
+                control={form.control}
+                name="notedAt"
+                render={({ field }) => (
+                  <View className="gap-1">
+                    <Label nativeID="notedAt">Data e hora</Label>
+                    <DateTimeField
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      disabled={isSubmitting}
+                    />
+                    {form.formState.errors.notedAt && (
+                      <Text className="text-sm text-red-600">
+                        {form.formState.errors.notedAt.message}
+                      </Text>
                     )}
-                  />
-                  <div className="grid grid-cols-2 gap-3">
-                    {renderDecimalField("lat", "Latitude")}
-                    {renderDecimalField("lng", "Longitude")}
-                  </div>
-                </React.Fragment>
-              )}
+                  </View>
+                )}
+              /> */}
 
-              {tab === "temp" && (
-                <div className="grid grid-cols-2 gap-3">
-                  {renderDecimalField("tb", "Tb (basal)", "°C")}
-                  {renderDecimalField("tSubstrato", "T substrato", "°C")}
-                  {renderDecimalField("tAr", "T ar", "°C")}
-                  {renderDecimalField("ctMin", "Tc mín", "°C")}
-                  {renderDecimalField("ctMax", "CTMax", "°C")}
-                  {renderDecimalField("tPref", "T preferencial", "°C")}
-                </div>
-              )}
+              <View className="flex flex-row gap-3">
+                <Controller
+                  control={form.control}
+                  name="exposicaoSol"
+                  render={({ field }) => (
+                    <View className="flex-1 space-y-1">
+                      <Label>Exposição ao sol</Label>
+                      <Select
+                        value={findOption(exposicaoOptions, field.value)}
+                        onValueChange={(option) =>
+                          field.onChange(option?.value)
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {exposicaoOptions.map((o) => (
+                            <SelectItem
+                              key={o.value}
+                              label={o.label}
+                              value={o.value}
+                            >
+                              {o.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </View>
+                  )}
+                />
+                <Controller
+                  control={form.control}
+                  name="sexo"
+                  render={({ field }) => (
+                    <View className="flex-1 space-y-1">
+                      <Label>Sexo</Label>
+                      <Select
+                        value={findOption(sexoOptions, field.value)}
+                        onValueChange={(option) =>
+                          field.onChange(option?.value)
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {sexoOptions.map((o) => (
+                            <SelectItem
+                              key={o.value}
+                              label={o.label}
+                              value={o.value}
+                            >
+                              {o.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </View>
+                  )}
+                />
+              </View>
+            </View>
+          )}
 
-              {tab === "morfo" && (
-                <div className="grid grid-cols-2 gap-3">
-                  {renderDecimalField("crc", "CRC", "mm")}
-                  {renderDecimalField("larguraCorpo", "Largura do corpo", "mm")}
-                  {renderDecimalField("alturaCorpo", "Altura do corpo", "mm")}
-                  {renderDecimalField(
-                    "comprimentoCauda",
-                    "Comprimento cauda",
-                    "mm",
-                  )}
-                  {renderDecimalField(
-                    "comprimentoCabeca",
-                    "Comprimento cabeça",
-                    "mm",
-                  )}
-                  {renderDecimalField("alturaCabeca", "Altura cabeça", "mm")}
-                  {renderDecimalField("larguraCabeca", "Largura cabeça", "mm")}
-                  {renderDecimalField(
-                    "pataDiantDir",
-                    "Pata diant. direita",
-                    "mm",
-                  )}
-                  {renderDecimalField(
-                    "pataDiantEsq",
-                    "Pata diant. esquerda",
-                    "mm",
-                  )}
-                  {renderDecimalField(
-                    "pataTrasDir",
-                    "Pata tras. direita",
-                    "mm",
-                  )}
-                  {renderDecimalField(
-                    "pataTrasEsq",
-                    "Pata tras. esquerda",
-                    "mm",
-                  )}
-                </div>
-              )}
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose}>
-                Cancelar
+          {tab === "local" && (
+            <View className="gap-4">
+              <Button
+                variant="outline"
+                onPress={handlePegarLocalizacao}
+                disabled={isLocating}
+                className="flex flex-row items-center gap-2 self-start"
+              >
+                <MapPin size={16} />
+                <Text>
+                  {isLocating
+                    ? "Localizando..."
+                    : "Usar minha localização atual"}
+                </Text>
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Salvando..." : notes ? "Atualizar" : "Criar"}{" "}
-                Calango
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+
+              {dados.lat !== undefined && !isLocating && !locError && (
+                <View className="bg-green-50 px-3 py-2 rounded-md">
+                  <Text className="text-sm text-green-700">
+                    📍 Localização capturada
+                    {dados.endereco ? `: ${dados.endereco}` : ""}
+                  </Text>
+                </View>
+              )}
+
+              {locError ? (
+                <Text className="text-sm text-amber-600">{locError}</Text>
+              ) : null}
+
+              <Controller
+                control={form.control}
+                name="endereco"
+                render={({ field }) => (
+                  <View className="space-y-1">
+                    <Label nativeID="endereco">Local</Label>
+                    <Input
+                      aria-labelledby="endereco"
+                      placeholder="Avenida Amazonas, 1720, Umuarama, Uberlândia MG"
+                      value={field.value ?? ""}
+                      onChangeText={field.onChange}
+                      onBlur={field.onBlur}
+                      editable={!isSubmitting}
+                    />
+                  </View>
+                )}
+              />
+
+              <Controller
+                control={form.control}
+                name="cep"
+                render={({ field }) => (
+                  <View className="space-y-1">
+                    <Label nativeID="cep">CEP</Label>
+                    <Input
+                      aria-labelledby="cep"
+                      placeholder="38405-302"
+                      value={field.value ?? ""}
+                      onChangeText={field.onChange}
+                      onBlur={field.onBlur}
+                      editable={!isSubmitting}
+                    />
+                  </View>
+                )}
+              />
+
+              <View className="flex flex-row gap-3">
+                <View className="flex-1">
+                  {renderDecimalField("lat", "Latitude")}
+                </View>
+                <View className="flex-1">
+                  {renderDecimalField("lng", "Longitude")}
+                </View>
+              </View>
+            </View>
+          )}
+
+          {tab === "temp" && (
+            <View className="flex flex-row flex-wrap gap-3">
+              <View className="w-[47%]">
+                {renderDecimalField("tb", "Tb (basal)", "°C")}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField("tSubstrato", "T substrato", "°C")}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField("tAr", "T ar", "°C")}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField("ctMin", "Tc mín", "°C")}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField("ctMax", "CTMax", "°C")}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField("tPref", "T preferencial", "°C")}
+              </View>
+            </View>
+          )}
+
+          {tab === "morfo" && (
+            <View className="flex flex-row flex-wrap gap-3">
+              <View className="w-[47%]">
+                {renderDecimalField("crc", "CRC", "mm")}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField("larguraCorpo", "Largura do corpo", "mm")}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField("alturaCorpo", "Altura do corpo", "mm")}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField(
+                  "comprimentoCauda",
+                  "Comprimento cauda",
+                  "mm",
+                )}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField(
+                  "comprimentoCabeca",
+                  "Comprimento cabeça",
+                  "mm",
+                )}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField("alturaCabeca", "Altura cabeça", "mm")}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField("larguraCabeca", "Largura cabeça", "mm")}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField(
+                  "pataDiantDir",
+                  "Pata diant. direita",
+                  "mm",
+                )}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField(
+                  "pataDiantEsq",
+                  "Pata diant. esquerda",
+                  "mm",
+                )}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField("pataTrasDir", "Pata tras. direita", "mm")}
+              </View>
+              <View className="w-[47%]">
+                {renderDecimalField("pataTrasEsq", "Pata tras. esquerda", "mm")}
+              </View>
+            </View>
+          )}
+        </ScrollView>
+
+        <DialogFooter>
+          <Button variant="outline" onPress={handleClose}>
+            <Text>Cancelar</Text>
+          </Button>
+          <Button disabled={isSubmitting} onPress={handleSubmitWithTabSwitch}>
+            <Text>
+              {isSubmitting ? "Salvando..." : notes ? "Atualizar" : "Criar"}{" "}
+              Calango
+            </Text>
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
