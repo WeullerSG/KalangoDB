@@ -1,7 +1,9 @@
 import { relativeTime } from "@/lib/relativeTime";
 import { ArrowLeft, MapPin, Plus, Thermometer } from "lucide-react-native";
+import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { Doc } from "../../../../convex/_generated/dataModel";
+import LizardForm from "../components/LizardsForm";
 
 const avatarColors = ["#e8a33d", "#7a8f6e", "#c47a5a", "#5a7a8f", "#8f5a7a"];
 
@@ -36,6 +38,8 @@ interface PropsDetails {
 }
 
 export default function LizardsDetails({ lizardId, onBack }: PropsDetails) {
+  const [formOpen, setFormOpen] = useState(false);
+
   return (
     <View className="flex-1 bg-[#f2efe6]">
       {/* Header */}
@@ -51,10 +55,14 @@ export default function LizardsDetails({ lizardId, onBack }: PropsDetails) {
           Ficha de campo
         </Text>
 
-        <Pressable className="p-2 rounded-full active:bg-[#e8e4d8]">
+        <Pressable
+          className="p-2 rounded-full active:bg-[#e8e4d8]"
+          onPress={() => setFormOpen(true)}
+        >
           <Plus size={24} color="#000" />
         </Pressable>
       </View>
+      <LizardForm open={formOpen} onOpenChange={setFormOpen} notes={lizardId} />
 
       <ScrollView
         className="flex-1 mt-6"

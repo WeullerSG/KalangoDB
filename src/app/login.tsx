@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -131,7 +131,11 @@ export function Login() {
                 <Separator className="flex-1" />
               </View>
 
-              <Button variant="outline" className="mt-4 w-full">
+              <Button
+                variant="outline"
+                className="mt-4 w-full"
+                onPress={() => void signIn("google")}
+              >
                 <Text>Entrar com Google</Text>
               </Button>
 

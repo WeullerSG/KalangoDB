@@ -12,7 +12,10 @@ import type * as auth from "../auth.js";
 import type * as http from "../http.js";
 import type * as model_observations_mutation from "../model/observations/mutation.js";
 import type * as model_observations_query from "../model/observations/query.js";
+import type * as model_runs_mutation from "../model/runs/mutation.js";
+import type * as model_runs_query from "../model/runs/query.js";
 import type * as observations from "../observations.js";
+import type * as runs from "../runs.js";
 
 import type {
   ApiFromModules,
@@ -25,7 +28,10 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "model/observations/mutation": typeof model_observations_mutation;
   "model/observations/query": typeof model_observations_query;
+  "model/runs/mutation": typeof model_runs_mutation;
+  "model/runs/query": typeof model_runs_query;
   observations: typeof observations;
+  runs: typeof runs;
 }>;
 
 /**

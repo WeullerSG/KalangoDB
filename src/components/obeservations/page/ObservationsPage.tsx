@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { Search, Settings } from "lucide-react-native";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ScrollView, Text, TextInput, View } from "react-native";
 import { api } from "../../../../convex/_generated/api";
 import { Doc } from "../../../../convex/_generated/dataModel";
@@ -15,6 +15,16 @@ export default function ObservationsPage() {
   const [busca, setBusca] = useState("");
   const [selectedLizard, setSelectedLizard] =
     useState<Doc<"observations"> | null>(null);
+
+  useEffect(() => {
+    setSelectedLizard((atual) => {
+      if (!atual) return null;
+
+      const atualizado = calangos.find((calango) => calango._id === atual._id);
+
+      return atualizado ?? atual;
+    });
+  }, [calangos]);
 
   const filtrados = useMemo(() => {
     if (!busca.trim()) return calangos;

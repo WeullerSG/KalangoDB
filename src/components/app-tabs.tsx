@@ -8,6 +8,7 @@ import { Colors } from "@/constants/theme";
 import { Authenticated, Unauthenticated } from "convex/react";
 import LizardForm from "./obeservations/components/LizardsForm";
 import ObservationsPage from "./obeservations/page/ObservationsPage";
+import RunsPage from "./runs/page/RunsPage";
 
 export default function AppTabs() {
   const scheme = useColorScheme();
@@ -20,7 +21,7 @@ export default function AppTabs() {
       <Authenticated>
         <View className="flex-1">
           {screen === "observations" && <ObservationsPage />}
-          {/* {screen === "runs" && <RunsPage />} */}
+          {screen === "runs" && <RunsPage />}
 
           <BottomNavbar
             active={screen}
