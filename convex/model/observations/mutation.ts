@@ -92,3 +92,48 @@ export const create = mutation({
     });
   },
 });
+
+export const update = mutation({
+  args: {
+    id: v.id("observations"),
+
+    nome: v.string(),
+    notedAt: v.number(),
+
+    endereco: v.optional(v.string()),
+    cep: v.optional(v.string()),
+    lat: v.optional(v.number()),
+    lng: v.optional(v.number()),
+
+    exposicaoSol: v.optional(v.string()),
+    sexo: v.optional(v.string()),
+
+    tb: v.optional(v.number()),
+    tSubstrato: v.optional(v.number()),
+    tAr: v.optional(v.number()),
+
+    ctMin: v.optional(v.number()),
+    ctMax: v.optional(v.number()),
+    tPref: v.optional(v.number()),
+
+    crc: v.optional(v.number()),
+    larguraCorpo: v.optional(v.number()),
+    alturaCorpo: v.optional(v.number()),
+    comprimentoCauda: v.optional(v.number()),
+    comprimentoCabeca: v.optional(v.number()),
+    alturaCabeca: v.optional(v.number()),
+    larguraCabeca: v.optional(v.number()),
+    pataDiantDir: v.optional(v.number()),
+    pataDiantEsq: v.optional(v.number()),
+    pataTrasDir: v.optional(v.number()),
+    pataTrasEsq: v.optional(v.number()),
+  },
+
+  handler: async (ctx, args) => {
+    const { id, ...dados } = args;
+
+    await ctx.db.patch(id, dados);
+
+    return id;
+  },
+});

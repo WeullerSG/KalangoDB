@@ -136,6 +136,7 @@ export default function LizardForm({
     : setInternalOpen;
 
   const createObservation = useMutation(api.observations.create);
+  const updateObservation = useMutation(api.observations.update);
 
   const form = useForm<LizardFormData>({
     resolver: zodResolver(lizardSchema),
@@ -222,43 +223,79 @@ export default function LizardForm({
     setError("");
 
     try {
-      await createObservation({
-        clientId: Crypto.randomUUID(),
-        nome: values.nome,
-        notedAt: new Date(values.notedAt).getTime(),
+      if (notes) {
+        await updateObservation({
+          id: notes._id,
+          nome: values.nome,
+          notedAt: new Date(values.notedAt).getTime(),
 
-        endereco: values.endereco || undefined,
-        cep: values.cep || undefined,
-        lat: toNumber(values.lat),
-        lng: toNumber(values.lng),
+          endereco: values.endereco || undefined,
+          cep: values.cep || undefined,
+          lat: toNumber(values.lat),
+          lng: toNumber(values.lng),
 
-        exposicaoSol: values.exposicaoSol || undefined,
-        sexo: values.sexo || undefined,
+          exposicaoSol: values.exposicaoSol || undefined,
+          sexo: values.sexo || undefined,
 
-        tb: toNumber(values.tb),
-        tSubstrato: toNumber(values.tSubstrato),
-        tAr: toNumber(values.tAr),
+          tb: toNumber(values.tb),
+          tSubstrato: toNumber(values.tSubstrato),
+          tAr: toNumber(values.tAr),
 
-        ctMin: toNumber(values.ctMin),
-        ctMax: toNumber(values.ctMax),
-        tPref: toNumber(values.tPref),
+          ctMin: toNumber(values.ctMin),
+          ctMax: toNumber(values.ctMax),
+          tPref: toNumber(values.tPref),
 
-        crc: toNumber(values.crc),
-        larguraCorpo: toNumber(values.larguraCorpo),
-        alturaCorpo: toNumber(values.alturaCorpo),
-        comprimentoCauda: toNumber(values.comprimentoCauda),
-        comprimentoCabeca: toNumber(values.comprimentoCabeca),
-        alturaCabeca: toNumber(values.alturaCabeca),
-        larguraCabeca: toNumber(values.larguraCabeca),
-        pataDiantDir: toNumber(values.pataDiantDir),
-        pataDiantEsq: toNumber(values.pataDiantEsq),
-        pataTrasDir: toNumber(values.pataTrasDir),
-        pataTrasEsq: toNumber(values.pataTrasEsq),
-      });
+          crc: toNumber(values.crc),
+          larguraCorpo: toNumber(values.larguraCorpo),
+          alturaCorpo: toNumber(values.alturaCorpo),
+          comprimentoCauda: toNumber(values.comprimentoCauda),
+          comprimentoCabeca: toNumber(values.comprimentoCabeca),
+          alturaCabeca: toNumber(values.alturaCabeca),
+          larguraCabeca: toNumber(values.larguraCabeca),
+          pataDiantDir: toNumber(values.pataDiantDir),
+          pataDiantEsq: toNumber(values.pataDiantEsq),
+          pataTrasDir: toNumber(values.pataTrasDir),
+          pataTrasEsq: toNumber(values.pataTrasEsq),
+        });
+      } else {
+        await createObservation({
+          clientId: Crypto.randomUUID(),
+          nome: values.nome,
+          notedAt: new Date(values.notedAt).getTime(),
 
+          endereco: values.endereco || undefined,
+          cep: values.cep || undefined,
+          lat: toNumber(values.lat),
+          lng: toNumber(values.lng),
+
+          exposicaoSol: values.exposicaoSol || undefined,
+          sexo: values.sexo || undefined,
+
+          tb: toNumber(values.tb),
+          tSubstrato: toNumber(values.tSubstrato),
+          tAr: toNumber(values.tAr),
+
+          ctMin: toNumber(values.ctMin),
+          ctMax: toNumber(values.ctMax),
+          tPref: toNumber(values.tPref),
+
+          crc: toNumber(values.crc),
+          larguraCorpo: toNumber(values.larguraCorpo),
+          alturaCorpo: toNumber(values.alturaCorpo),
+          comprimentoCauda: toNumber(values.comprimentoCauda),
+          comprimentoCabeca: toNumber(values.comprimentoCabeca),
+          alturaCabeca: toNumber(values.alturaCabeca),
+          larguraCabeca: toNumber(values.larguraCabeca),
+          pataDiantDir: toNumber(values.pataDiantDir),
+          pataDiantEsq: toNumber(values.pataDiantEsq),
+          pataTrasDir: toNumber(values.pataTrasDir),
+          pataTrasEsq: toNumber(values.pataTrasEsq),
+        });
+      }
       handleClose();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Ocorreu um erro";
+
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -722,9 +759,14 @@ export default function LizardForm({
           <Button variant="outline" onPress={handleClose}>
             <Text>Cancelar</Text>
           </Button>
-          <Button disabled={isSubmitting} onPress={handleSubmitWithTabSwitch}>
+          <Button
+            disabled={isSubmitting}
+            onPress={handleSubmitWithTabSwitch}
+            className="bg-[#9acd32]"
+            variant={"secondary"}
+          >
             <Text>
-              {isSubmitting ? "Salvando..." : notes ? "Atualizar" : "Criar"}{" "}
+              {isSubmitting ? "Salvando..." : notes ? "Atualizar" : "Criar"}
               Calango
             </Text>
           </Button>
