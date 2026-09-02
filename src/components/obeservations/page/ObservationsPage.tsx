@@ -5,11 +5,17 @@ import { Search, Settings } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import { ScrollView, Text, TextInput, View } from "react-native";
 import { api } from "../../../../convex/_generated/api";
-import { Doc } from "../../../../convex/_generated/dataModel";
+import { Doc, Id } from "../../../../convex/_generated/dataModel";
 import LizardsCard from "../components/lizardsCard";
 import LizardsDetails from "./LizardsDetails";
 
-export default function ObservationsPage() {
+interface ObservationsPageProps {
+  onViewRuns?: (observationClientId: Id<"observations">) => void;
+}
+
+export default function ObservationsPage({
+  onViewRuns,
+}: ObservationsPageProps) {
   const { signOut } = useAuthActions();
   const calangos = useQuery(api.observations.list) || [];
   const [busca, setBusca] = useState("");
@@ -37,6 +43,7 @@ export default function ObservationsPage() {
       <LizardsDetails
         lizardId={selectedLizard}
         onBack={() => setSelectedLizard(null)}
+        onViewRuns={onViewRuns}
       />
     );
   }

@@ -1,27 +1,23 @@
 import { useQuery } from "convex/react";
-import { useLocalSearchParams } from "expo-router";
-import { Plus, Search } from "lucide-react-native";
+import { Search } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { api } from "../../../../convex/_generated/api";
 import { Doc, Id } from "../../../../convex/_generated/dataModel";
 import RunsCard from "../components/RunsCard";
+import RunDetailsDialog from "../components/RunsDialog";
 import RunsForm from "../components/RunsForm";
 
-export default function RunsPage() {
-  // se a página foi aberta a partir do detalhe de um calango
-  // (ex: router.push({ pathname: "/runs", params: { observationClientId } }))
-  const { observationClientId } = useLocalSearchParams<{
-    observationClientId?: string;
-  }>();
+interface RunsPageProps {
+  // filtro opcional: quando vindo do detalhe de um calango via callback
+  observationClientId?: Id<"observations">;
+}
 
-  const runs = useQuery(api.runs.list, {
-    observationClientId: observationClientId
-      ? (observationClientId as Id<"observations">)
-      : undefined,
-  });
+export default function RunsPage({ observationClientId }: RunsPageProps) {
+  const runs = useQuery(api.runs.list, { observationClientId });
 
   const [formOpen, setFormOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedRun, setSelectedRun] = useState<Doc<"runs"> | null>(null);
   const [busca, setBusca] = useState("");
 
@@ -33,7 +29,7 @@ export default function RunsPage() {
 
   const handleItemPress = (run: Doc<"runs">) => {
     setSelectedRun(run);
-    setFormOpen(true);
+    setDetailsOpen(true);
   };
 
   const handleFormOpenChange = (value: boolean) => {
@@ -41,29 +37,48 @@ export default function RunsPage() {
     if (!value) setSelectedRun(null);
   };
 
+  const handleEditFromDetails = () => {
+    setDetailsOpen(false);
+    setFormOpen(true);
+  };
+
   return (
     <>
       <View className="flex-1 bg-[#8a9a6e]">
-        <View className="flex-row justify-between items-center pt-20 pl-4 pr-2">
+        <View className="flex flex-row justify-between items-start pt-20 pl-4 pr-2">
           <View>
             <Text className="text-xs font-semibold text-black tracking-wide uppercase">
               Dados de desempenho
             </Text>
-
-            <Text className="text-2xl font-bold text-black tracking-tight">
-              Corridas
-            </Text>
+            <View className="flex-row items-center gap-2 mt-1">
+              <Text className="text-2xl font-bold text-black tracking-tight">
+                Corridas
+              </Text>
+            </View>
+            <View className="bg-[#e8e4d8] rounded-full px-2.5 py-0.5 mt-1">
+              <Pressable
+                onPress={() => {
+                  setSelectedRun(null);
+                  setFormOpen(true);
+                }}
+              >
+                <Text className="text-xs font-medium text-muted-foreground">
+                  Adicionar nova corrida
+                </Text>
+              </Pressable>
+            </View>
+            <RunsForm
+              run={selectedRun ?? undefined}
+              open={formOpen}
+              onOpenChange={handleFormOpenChange}
+            />
+            <RunDetailsDialog
+              run={selectedRun}
+              open={detailsOpen}
+              onOpenChange={setDetailsOpen}
+              onEdit={handleEditFromDetails}
+            />
           </View>
-
-          <Pressable
-            className="p-2 rounded-full active:bg-[#e8e4d8]"
-            onPress={() => {
-              setSelectedRun(null);
-              setFormOpen(true);
-            }}
-          >
-            <Plus size={24} color="#000" />
-          </Pressable>
         </View>
 
         <View className="px-4 mt-4">
@@ -88,11 +103,6 @@ export default function RunsPage() {
           <RunsCard runs={filtrados} onItemPress={handleItemPress} />
         </ScrollView>
       </View>
-      <RunsForm
-        run={selectedRun ?? undefined}
-        open={formOpen}
-        onOpenChange={handleFormOpenChange}
-      />
     </>
   );
 }

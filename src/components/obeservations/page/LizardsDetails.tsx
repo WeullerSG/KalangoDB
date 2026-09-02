@@ -1,8 +1,16 @@
 import { relativeTime } from "@/lib/relativeTime";
-import { ArrowLeft, MapPin, Plus, Thermometer } from "lucide-react-native";
+import { useQuery } from "convex/react";
+import {
+  Activity,
+  ArrowLeft,
+  MapPin,
+  Plus,
+  Thermometer,
+} from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { Doc } from "../../../../convex/_generated/dataModel";
+import { api } from "../../../../convex/_generated/api";
+import { Doc, Id } from "../../../../convex/_generated/dataModel";
 import LizardForm from "../components/LizardsForm";
 
 const avatarColors = ["#e8a33d", "#7a8f6e", "#c47a5a", "#5a7a8f", "#8f5a7a"];
@@ -35,10 +43,22 @@ function formatExposicao(exposicao?: string) {
 interface PropsDetails {
   lizardId: Doc<"observations">;
   onBack: () => void;
+  onViewRuns?: (observationClientId: Id<"observations">) => void;
 }
 
-export default function LizardsDetails({ lizardId, onBack }: PropsDetails) {
+export default function LizardsDetails({
+  lizardId,
+  onBack,
+  onViewRuns,
+}: PropsDetails) {
   const [formOpen, setFormOpen] = useState(false);
+
+  const handleVerCorridas = () => {
+    onViewRuns?.(lizardId._id);
+  };
+
+  const runs =
+    useQuery(api.runs.list, { observationClientId: lizardId._id }) || [];
 
   return (
     <View className="flex-1 bg-[#f2efe6]">
@@ -123,8 +143,22 @@ export default function LizardsDetails({ lizardId, onBack }: PropsDetails) {
                 {lizardId.endereco}
                 {lizardId.cep && ` - ${lizardId.cep}`}
               </Text>
+              <Text className="text-[#a0c496] text-sm">
+                Corridas registradas: {runs.length}
+              </Text>
             </View>
           )}
+
+          {/* Botão: ver corridas desse calango */}
+          <Pressable
+            onPress={handleVerCorridas}
+            className="flex-row items-center justify-center gap-2 bg-[#e8e4d8] rounded-2xl py-3 mt-1 active:opacity-80"
+          >
+            <Activity size={18} color="#365946" />
+            <Text className="text-[#365946] font-semibold text-sm">
+              Ver corridas
+            </Text>
+          </Pressable>
         </View>
 
         {/* Temperaturas Registradas */}

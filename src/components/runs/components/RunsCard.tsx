@@ -1,5 +1,7 @@
+import { useQuery } from "convex/react";
 import { ChevronRight } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
+import { api } from "../../../../convex/_generated/api";
 import { Doc } from "../../../../convex/_generated/dataModel";
 
 const avatarColors = ["#e8a33d", "#7a8f6e", "#c47a5a", "#5a7a8f", "#8f5a7a"];
@@ -16,6 +18,8 @@ interface ItemProps {
 
 function RunListItem({ run, onPress }: ItemProps) {
   const subtitle = `${run.temperatura}°C`;
+  const calangos = useQuery(api.observations.list) || [];
+  const calango = calangos.find((c) => c._id === run.observationClientId);
 
   const infoLine =
     run.desempenho !== undefined ? `Desempenho: ${run.desempenho}` : null;
@@ -35,7 +39,7 @@ function RunListItem({ run, onPress }: ItemProps) {
       <View className="flex-1">
         <View className="flex-row items-center gap-2">
           <Text className="text-base font-bold text-foreground">
-            Corrida #{run.ordem}
+            {calango?.nome || "Calango não encontrado"} - Corrida #{run.ordem}
           </Text>
         </View>
         <Text className="text-sm text-[#8a9a6e]">{subtitle}</Text>
