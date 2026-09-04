@@ -23,7 +23,6 @@ import { Controller, useForm } from "react-hook-form";
 import { ScrollView, Text, View } from "react-native";
 import * as z from "zod";
 
-import { GetLocalization } from "@/hooks/getLocalization";
 import { useMutation } from "convex/react";
 import { MapPin, PawPrint, Ruler, Thermometer } from "lucide-react-native";
 import { api } from "../../../../convex/_generated/api";
@@ -312,24 +311,75 @@ export default function LizardForm({
   const [isLocating, setIsLocating] = useState(false);
   const [locError, setLocError] = useState("");
 
-  async function handlePegarLocalizacao() {
+  // async function handlePegarLocalizacao() {
+  //   setIsLocating(true);
+  //   setLocError("");
+  //   try {
+  //     const resultado = await GetLocalization();
+  //     setDados(resultado);
+
+  //     if (resultado.endereco) form.setValue("endereco", resultado.endereco);
+  //     if (resultado.cep) form.setValue("cep", resultado.cep);
+  //     if (resultado.lat !== undefined)
+  //       form.setValue("lat", toDisplay(resultado.lat));
+  //     if (resultado.lng !== undefined)
+  //       form.setValue("lng", toDisplay(resultado.lng));
+  //   } catch (e) {
+  //     setLocError(
+  //       "Não foi possível obter a localização. Preencha manualmente.",
+  //     );
+  //     console.error(e);
+  //   } finally {
+  //     setIsLocating(false);
+  //   }
+  // }
+
+  async function handlePegarLocalizacaoWeb() {
     setIsLocating(true);
     setLocError("");
-    try {
-      const resultado = await GetLocalization();
-      setDados(resultado);
 
-      if (resultado.endereco) form.setValue("endereco", resultado.endereco);
-      if (resultado.cep) form.setValue("cep", resultado.cep);
-      if (resultado.lat !== undefined)
-        form.setValue("lat", toDisplay(resultado.lat));
-      if (resultado.lng !== undefined)
-        form.setValue("lng", toDisplay(resultado.lng));
-    } catch (e) {
-      setLocError(
-        "Não foi possível obter a localização. Preencha manualmente.",
+    try {
+      if (!navigator.geolocation) {
+        throw new Error("Geolocalização não suportada pelo navegador.");
+      }
+
+      const position = await new Promise<GeolocationPosition>(
+        (resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+          });
+        },
       );
-      console.error(e);
+
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      // reverse geocoding gratuito (Nominatim) pra puxar endereço/cep a partir do lat/lng
+      let endereco: string | undefined;
+      let cep: string | undefined;
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+        );
+        const geo = await res.json();
+        endereco = geo?.display_name;
+        cep = geo?.address?.postcode;
+      } catch (geoErr) {
+        console.warn("Reverse geocoding falhou:", geoErr);
+      }
+
+      setDados({ lat, lng, endereco, cep });
+      form.setValue("lat", toDisplay(lat));
+      form.setValue("lng", toDisplay(lng));
+      if (endereco) form.setValue("endereco", endereco);
+      if (cep) form.setValue("cep", cep);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro desconhecido";
+      setLocError(
+        `Não foi possível obter a localização (${message}). Preencha manualmente.`,
+      );
+      console.error(err);
     } finally {
       setIsLocating(false);
     }
@@ -605,7 +655,7 @@ export default function LizardForm({
             <View className="gap-4">
               <Button
                 variant="outline"
-                onPress={handlePegarLocalizacao}
+                onPress={handlePegarLocalizacaoWeb}
                 disabled={isLocating}
                 className="flex flex-row items-center gap-2 self-start"
               >

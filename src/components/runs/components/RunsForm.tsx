@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,17 +17,43 @@ import { Text, View } from "react-native";
 import * as z from "zod";
 
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import { Doc } from "../../../../convex/_generated/dataModel";
+import { Doc, Id } from "../../../../convex/_generated/dataModel";
+
+import { uploadVideoToRun } from "@/hooks/uploadVideo";
+import * as ImagePicker from "expo-image-picker";
+
+export function VideoPicker({
+  onVideoSelected,
+}: {
+  onVideoSelected: (asset: ImagePicker.ImagePickerAsset) => void;
+}) {
+  const pickVideo = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["videos"],
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      onVideoSelected(result.assets[0]); // só guarda, não sobe ainda
+    }
+  };
+
+  return (
+    <Button className="bg-slate-400" variant="outline" onPress={pickVideo}>
+      <Text>Selecionar vídeo</Text>
+    </Button>
+  );
+}
 
 // converte "28,5" -> 28.5 (teclado BR usa vírgula)
 function toNumber(v?: string): number | undefined {
@@ -90,6 +116,11 @@ export default function RunsForm({
     value: calango._id,
   }));
 
+  const generateUploadUrl = useAction(api.runs.generateUploadUrl);
+  const attachVideoToRun = useMutation(api.runs.attachVideoToRun);
+  const [pendingVideo, setPendingVideo] =
+    useState<ImagePicker.ImagePickerAsset | null>(null);
+
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [internalOpen, setInternalOpen] = useState(false);
@@ -124,6 +155,7 @@ export default function RunsForm({
     setError("");
 
     try {
+      let currentRunId: Id<"runs">;
       if (run) {
         await updateRun({
           id: run._id,
@@ -132,8 +164,9 @@ export default function RunsForm({
           temperatura: toNumber(values.temperatura)!,
           desempenho: toNumber(values.desempenho),
         });
+        currentRunId = run._id;
       } else {
-        await createRun({
+        currentRunId = await createRun({
           clientId: Crypto.randomUUID(),
           observationClientId: values.calango,
           ordem: Number(values.ordem),
@@ -141,6 +174,16 @@ export default function RunsForm({
           desempenho: toNumber(values.desempenho),
         });
       }
+
+      if (pendingVideo) {
+        await uploadVideoToRun(
+          pendingVideo,
+          currentRunId,
+          generateUploadUrl,
+          attachVideoToRun,
+        );
+      }
+
       handleClose();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Ocorreu um erro";
@@ -273,6 +316,11 @@ export default function RunsForm({
 
           {renderDecimalField("temperatura", "Temperatura", "°C")}
           {renderDecimalField("desempenho", "Desempenho (opcional)")}
+
+          <VideoPicker onVideoSelected={setPendingVideo} />
+          {pendingVideo && (
+            <Text className="text-sm text-gray-500">Vídeo selecionado ✓</Text>
+          )}
         </View>
 
         <DialogFooter>
