@@ -46,7 +46,8 @@
           "locationAlwaysAndWhenInUsePermission": "Permita o acesso à localização para registrar onde o calango foi observado."
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true,

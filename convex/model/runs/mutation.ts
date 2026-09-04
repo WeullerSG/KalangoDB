@@ -38,3 +38,21 @@ export const updateRun = mutation({
     return id;
   },
 });
+
+export const attachVideoToRun = mutation({
+  args: {
+    id: v.id("runs"),
+    videoKey: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const publicUrl = process.env.R2_PUBLIC_URL;
+    if (!publicUrl) {
+      throw new Error("R2_PUBLIC_URL não configurada no Convex");
+    }
+    await ctx.db.patch(args.id, {
+      videoKey: args.videoKey,
+      videoUrl: `${publicUrl}/${args.videoKey}`,
+    });
+    return args.id;
+  },
+});
