@@ -73,7 +73,7 @@ export default function RunsPage({ observationClientId }: RunsPageProps) {
               onOpenChange={handleFormOpenChange}
             />
             <RunDetailsDialog
-              key={selectedRun?._id ?? "new"}
+              key={selectedRun?._id ?? "novo"}
               run={selectedRun}
               open={detailsOpen}
               onOpenChange={setDetailsOpen}
