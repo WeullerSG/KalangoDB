@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as Crypto from "expo-crypto";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Text, View } from "react-native";
 import * as z from "zod";
@@ -44,7 +44,7 @@ export function VideoPicker({
     });
 
     if (!result.canceled && result.assets[0]) {
-      onVideoSelected(result.assets[0]); // só guarda, não sobe ainda
+      onVideoSelected(result.assets[0]);
     }
   };
 
@@ -144,6 +144,17 @@ export default function RunsForm({
     },
   });
 
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        calango: run?.observationClientId ?? "",
+        ordem: run ? String(run.ordem) : "1",
+        temperatura: toDisplay(run?.temperatura),
+        desempenho: toDisplay(run?.desempenho),
+      });
+    }
+  }, [open, run]);
+
   const handleClose = () => {
     form.reset();
     setOpen(false);
@@ -227,7 +238,7 @@ export default function RunsForm({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[420px]">
+      <DialogContent className="sm:max-w-[420px] w-[80vw]">
         <DialogHeader>
           <DialogTitle>{run ? "Editar run" : "Nova run"}</DialogTitle>
           <DialogDescription>
