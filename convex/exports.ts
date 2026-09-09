@@ -35,32 +35,38 @@ export const getUserDataForExport = query({
         .join(" | ");
 
       rows.push({
-        ID: obs.nome,
-        Data: new Date(obs.notedAt).toLocaleDateString("pt-BR"),
-        Local: local,
-        "Exposicao ao sol": obs.exposicaoSol ?? "",
-        Sexo: obs.sexo ?? "",
-        Tb: obs.tb ?? "",
-        Tsubstrato: obs.tSubstrato ?? "",
-        "T ar": obs.tAr ?? "",
-        CRC: obs.crc ?? "",
-        "Largura do corpo": obs.larguraCorpo ?? "",
-        "Altura do corpo": obs.alturaCorpo ?? "",
-        "Comprimento da cauda": obs.comprimentoCauda ?? "",
-        "Comprimento da cabeca": obs.comprimentoCabeca ?? "",
-        "Altura da cabeca": obs.alturaCabeca ?? "",
-        "Largura da cabeca": obs.larguraCabeca ?? "",
-        "Pata dianteira direita": obs.pataDiantDir ?? "",
-        "Pata dianteira esquerda": obs.pataDiantEsq ?? "",
-        "Pata traseira direita": obs.pataTrasDir ?? "",
-        "Pata traseira esquerda": obs.pataTrasEsq ?? "",
-        Tcmin: obs.ctMin ?? "",
-        "Corrida 1": corridas[0],
-        "Corrida 2": corridas[1],
-        "Corrida 3": corridas[2],
-        "Corrida 4": corridas[3],
-        "Corrida 5": corridas[4],
-        Tcmax: obs.ctMax ?? "",
+        id: obs.nome,
+        data: new Date(obs.notedAt).toLocaleDateString("pt-BR"),
+        local,
+
+        exposicaoAoSol: obs.exposicaoSol ?? "",
+        sexo: obs.sexo ?? "",
+        tb: obs.tb ?? "",
+        tSubstrato: obs.tSubstrato ?? "",
+        tAr: obs.tAr ?? "",
+        crc: obs.crc ?? "",
+
+        larguraDoCorpo: obs.larguraCorpo ?? "",
+        alturaDoCorpo: obs.alturaCorpo ?? "",
+        comprimentoDaCauda: obs.comprimentoCauda ?? "",
+        comprimentoDaCabeca: obs.comprimentoCabeca ?? "",
+        alturaDaCabeca: obs.alturaCabeca ?? "",
+        larguraDaCabeca: obs.larguraCabeca ?? "",
+
+        pataDianteiraDireita: obs.pataDiantDir ?? "",
+        pataDianteiraEsquerda: obs.pataDiantEsq ?? "",
+        pataTraseiraDireita: obs.pataTrasDir ?? "",
+        pataTraseiraEsquerda: obs.pataTrasEsq ?? "",
+
+        tcmin: obs.ctMin ?? "",
+
+        corrida1: corridas[0],
+        corrida2: corridas[1],
+        corrida3: corridas[2],
+        corrida4: corridas[3],
+        corrida5: corridas[4],
+
+        tcmax: obs.ctMax ?? "",
       });
     }
 
