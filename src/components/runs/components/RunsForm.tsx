@@ -106,11 +106,6 @@ export default function RunsForm({
 }: AddRunsProps) {
   const calangos = useQuery(api.observations.list) || [];
 
-  // STOPGAP: usando calango._id (sempre definido e não-vazio) em vez de
-  // calango.clientId, que causava o crash do SelectItem quando undefined.
-  // Se a tabela observations tiver um campo clientId próprio que deva ser
-  // usado como FK em vez do _id, me avise o nome do campo pra eu trocar
-  // de volta (e ajustar o validator da mutation para v.string()).
   const lizard = calangos.map((calango) => ({
     label: calango.nome,
     value: calango._id,
