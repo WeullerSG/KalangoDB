@@ -1,4 +1,12 @@
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { exportToCsv } from "@/hooks/useCsvExport";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { Search, Settings } from "lucide-react-native";
@@ -19,6 +27,11 @@ export default function ObservationsPage({
   const { signOut } = useAuthActions();
   const calangos = useQuery(api.observations.list) || [];
   const [busca, setBusca] = useState("");
+  const data = useQuery(api.exports.getUserDataForExport);
+  const handleExport = async () => {
+    if (!data) return;
+    await exportToCsv(data, "kalango-dados");
+  };
   const [selectedLizard, setSelectedLizard] =
     useState<Doc<"observations"> | null>(null);
 
@@ -66,9 +79,27 @@ export default function ObservationsPage({
             </View>
           </View>
         </View>
-        <Button variant={"ghost"} onPress={() => signOut()}>
-          <Settings />
-        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant={"ghost"}>
+              <Settings />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent sideOffset={2} className="w-56" align="start">
+            <DropdownMenuItem>
+              <Button variant={"ghost"} onPress={handleExport}>
+                <Text>Exportar CSV</Text>
+              </Button>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Button variant={"ghost"} onPress={() => signOut}>
+                <Text>Sair</Text>
+              </Button>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </View>
 
       <View className="px-4 mt-4">
