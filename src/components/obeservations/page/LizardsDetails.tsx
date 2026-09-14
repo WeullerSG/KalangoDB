@@ -61,17 +61,17 @@ export default function LizardsDetails({
     useQuery(api.runs.list, { observationClientId: lizardId._id }) || [];
 
   return (
-    <View className="flex-1 bg-[#f2efe6]">
+    <View className="flex-1 bg-[#a8d378]">
       {/* Header */}
-      <View className="flex-row justify-between items-center pt-20 px-4 gap-3">
+      <View className="flex flex-row justify-between items-start pt-[2.5rem] px-4 gap-3">
         <Pressable
           onPress={onBack}
-          className="p-2 rounded-2xl border-2 border-gray-300 active:bg-[#e8e4d8]"
+          className="p-2 rounded-2xl border-2 border-[#3d6d11]"
         >
-          <ArrowLeft size={24} color="#000" />
+          <ArrowLeft size={24} color="#3d6d11" />
         </Pressable>
 
-        <Text className="text-2xl font-bold text-[#718477] tracking-tight">
+        <Text className="text-2xl font-bold text-[#3d6d11] tracking-tight">
           Ficha de campo
         </Text>
 
@@ -259,11 +259,103 @@ export default function LizardsDetails({
         {/* Morfometria */}
         {(lizardId.crc !== undefined ||
           lizardId.comprimentoCauda !== undefined) && (
-          <View className="gap-2">
+          <View className="gap-2 pb-5">
             <Text className="text-[#718477] text-xs font-semibold uppercase tracking-wider px-1">
               Morfometria
             </Text>
             <View className="gap-2">
+              {lizardId.comprimentoCabeca !== undefined && (
+                <View className="flex-row justify-between bg-white rounded-2xl p-4">
+                  <Text className="text-foreground font-semibold">
+                    Comprimento da cabeça
+                  </Text>
+                  <Text className="text-foreground font-bold">
+                    {lizardId.comprimentoCabeca} mm
+                  </Text>
+                </View>
+              )}
+              {lizardId.alturaCabeca !== undefined && (
+                <View className="flex-row justify-between bg-white rounded-2xl p-4">
+                  <Text className="text-foreground font-semibold">
+                    Altura da cabeça
+                  </Text>
+                  <Text className="text-foreground font-bold">
+                    {lizardId.alturaCabeca} mm
+                  </Text>
+                </View>
+              )}
+              {lizardId.larguraCabeca !== undefined && (
+                <View className="flex-row justify-between bg-white rounded-2xl p-4">
+                  <Text className="text-foreground font-semibold">
+                    Largura da cabeça
+                  </Text>
+                  <Text className="text-foreground font-bold">
+                    {lizardId.larguraCabeca} mm
+                  </Text>
+                </View>
+              )}
+
+              {lizardId.larguraCorpo !== undefined && (
+                <View className="flex-row justify-between bg-white rounded-2xl p-4">
+                  <Text className="text-foreground font-semibold">
+                    Largura do corpo
+                  </Text>
+                  <Text className="text-foreground font-bold">
+                    {lizardId.larguraCorpo} mm
+                  </Text>
+                </View>
+              )}
+              {lizardId.alturaCorpo !== undefined && (
+                <View className="flex-row justify-between bg-white rounded-2xl p-4">
+                  <Text className="text-foreground font-semibold">
+                    Altura do corpo
+                  </Text>
+                  <Text className="text-foreground font-bold">
+                    {lizardId.alturaCorpo} mm
+                  </Text>
+                </View>
+              )}
+
+              {lizardId.pataDiantDir !== undefined && (
+                <View className="flex-row justify-between bg-white rounded-2xl p-4">
+                  <Text className="text-foreground font-semibold">
+                    Pata diant. direita
+                  </Text>
+                  <Text className="text-foreground font-bold">
+                    {lizardId.pataDiantDir} mm
+                  </Text>
+                </View>
+              )}
+              {lizardId.alturaCorpo !== undefined && (
+                <View className="flex-row justify-between bg-white rounded-2xl p-4">
+                  <Text className="text-foreground font-semibold">
+                    Pata diant. esquerda
+                  </Text>
+                  <Text className="text-foreground font-bold">
+                    {lizardId.pataDiantEsq} mm
+                  </Text>
+                </View>
+              )}
+              {lizardId.pataTrasDir !== undefined && (
+                <View className="flex-row justify-between bg-white rounded-2xl p-4">
+                  <Text className="text-foreground font-semibold">
+                    Pata tras. direita
+                  </Text>
+                  <Text className="text-foreground font-bold">
+                    {lizardId.pataTrasDir} mm
+                  </Text>
+                </View>
+              )}
+              {lizardId.alturaCorpo !== undefined && (
+                <View className="flex-row justify-between bg-white rounded-2xl p-4">
+                  <Text className="text-foreground font-semibold">
+                    Pata tras. esquerda
+                  </Text>
+                  <Text className="text-foreground font-bold">
+                    {lizardId.pataTrasEsq} mm
+                  </Text>
+                </View>
+              )}
               {lizardId.crc !== undefined && (
                 <View className="flex-row justify-between bg-white rounded-2xl p-4">
                   <Text className="text-foreground font-semibold">
@@ -282,17 +374,6 @@ export default function LizardsDetails({
                   </Text>
                   <Text className="text-foreground font-bold">
                     {lizardId.comprimentoCauda} mm
-                  </Text>
-                </View>
-              )}
-
-              {lizardId.larguraCorpo !== undefined && (
-                <View className="flex-row justify-between bg-white rounded-2xl p-4">
-                  <Text className="text-foreground font-semibold">
-                    Largura do corpo
-                  </Text>
-                  <Text className="text-foreground font-bold">
-                    {lizardId.larguraCorpo} mm
                   </Text>
                 </View>
               )}

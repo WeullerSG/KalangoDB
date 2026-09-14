@@ -62,21 +62,21 @@ export default function ObservationsPage({
   }
 
   return (
-    <View className="flex-1 bg-[#f2efe6]">
-      <View className="flex flex-row justify-between items-start pt-20 pl-4 pr-2">
+    <View className="flex-1 bg-[#a8d378]">
+      <View className="flex flex-row justify-between items-start pt-[2.5rem] pl-4 pr-2">
         <View>
-          <Text className="text-xs font-semibold text-[#8a9a6e] tracking-wide uppercase">
+          <Text className="text-xs font-semibold text-[#3d6d11] tracking-wide uppercase">
             Arquivo vivo
           </Text>
           <View className="flex-row items-center gap-2 mt-1">
-            <Text className="text-2xl font-bold text-foreground tracking-tight">
+            <Text className="text-2xl font-bold text-[#3d6d11] tracking-tight">
               Meus calangos
             </Text>
-            <View className="bg-[#e8e4d8] rounded-full px-2.5 py-0.5">
-              <Text className="text-xs font-medium text-muted-foreground">
-                {calangos.length} registros
-              </Text>
-            </View>
+          </View>
+          <View className="rounded-full py-0.5">
+            <Text className="text-[15px] font-medium text-[#3d6d11]">
+              {calangos.length} registros
+            </Text>
           </View>
         </View>
 
