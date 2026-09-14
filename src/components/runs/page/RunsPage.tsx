@@ -44,7 +44,7 @@ export default function RunsPage({ observationClientId }: RunsPageProps) {
 
   return (
     <>
-      <View className="flex-1 bg-[#a8d378]">
+      <View className="flex-1 bg-[#f2efe6]">
         <View className="flex flex-row justify-between items-start pt-[2.5rem] pl-4 pr-2">
           <View>
             <Text className="text-xs font-semibold text-[#3d6d11] tracking-wide uppercase">
