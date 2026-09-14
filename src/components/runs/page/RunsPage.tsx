@@ -1,5 +1,5 @@
 import { useQuery } from "convex/react";
-import { Search } from "lucide-react-native";
+import { Plus, Search } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { api } from "../../../../convex/_generated/api";
@@ -44,29 +44,18 @@ export default function RunsPage({ observationClientId }: RunsPageProps) {
 
   return (
     <>
-      <View className="flex-1 bg-[#8a9a6e]">
-        <View className="flex flex-row justify-between items-start pt-20 pl-4 pr-2">
+      <View className="flex-1 bg-[#a8d378]">
+        <View className="flex flex-row justify-between items-start pt-[2.5rem] pl-4 pr-2">
           <View>
-            <Text className="text-xs font-semibold text-black tracking-wide uppercase">
+            <Text className="text-xs font-semibold text-[#3d6d11] tracking-wide uppercase">
               Dados de desempenho
             </Text>
-            <View className="flex-row items-center gap-2 mt-1">
-              <Text className="text-2xl font-bold text-black tracking-tight">
+            <View className="flex-1 flex-row items-center gap-2 mt-1">
+              <Text className="text-2xl font-bold text-[#3d6d11] tracking-tight">
                 Corridas
               </Text>
             </View>
-            <View className="bg-[#e8e4d8] rounded-full px-2.5 py-0.5 mt-1">
-              <Pressable
-                onPress={() => {
-                  setSelectedRun(null);
-                  setFormOpen(true);
-                }}
-              >
-                <Text className="text-xs font-medium text-muted-foreground">
-                  Adicionar nova corrida
-                </Text>
-              </Pressable>
-            </View>
+
             <RunsForm
               run={selectedRun ?? undefined}
               open={formOpen}
@@ -79,6 +68,18 @@ export default function RunsPage({ observationClientId }: RunsPageProps) {
               onOpenChange={setDetailsOpen}
               onEdit={handleEditFromDetails}
             />
+          </View>
+          <View>
+            <Pressable
+              onPress={() => {
+                setSelectedRun(null);
+                setFormOpen(true);
+              }}
+
+              className="p-2 rounded-full active:bg-[#e8e4d8]"
+            >
+              <Plus size={24} color="#000" />
+            </Pressable>
           </View>
         </View>
 

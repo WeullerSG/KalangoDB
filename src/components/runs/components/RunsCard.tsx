@@ -62,7 +62,7 @@ interface CardProps {
 
 export default function RunsCard({ runs, onItemPress }: CardProps) {
   return (
-    <View className="gap-3">
+    <View className="gap-3 pb-5">
       {runs.map((run) => (
         <RunListItem
           key={run._id}
