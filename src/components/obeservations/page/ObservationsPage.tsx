@@ -89,14 +89,14 @@ export default function ObservationsPage({
           <DropdownMenuContent sideOffset={2} className="w-52" align="start">
             <DropdownMenuItem>
               <Button variant={"ghost"} onPress={handleExport}>
-                <Download size={28} />
+                <Download size={24} />
                 <Text>Exportar CSV</Text>
               </Button>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Button variant={"ghost"} onPress={() => signOut}>
-                <LogOut size={28} />
+                <LogOut size={24} />
                 <Text>Sair</Text>
               </Button>
             </DropdownMenuItem>
