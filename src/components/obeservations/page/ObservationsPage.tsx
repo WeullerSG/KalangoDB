@@ -9,7 +9,7 @@ import {
 import { exportToCsv } from "@/hooks/useCsvExport";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
-import { Search, Settings } from "lucide-react-native";
+import { Download, LogOut, Search, Settings } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import { ScrollView, Text, TextInput, View } from "react-native";
 import { api } from "../../../../convex/_generated/api";
@@ -86,15 +86,17 @@ export default function ObservationsPage({
               <Settings />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent sideOffset={2} className="w-56" align="start">
+          <DropdownMenuContent sideOffset={2} className="w-52" align="start">
             <DropdownMenuItem>
               <Button variant={"ghost"} onPress={handleExport}>
+                <Download size={24} />
                 <Text>Exportar CSV</Text>
               </Button>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Button variant={"ghost"} onPress={() => signOut}>
+                <LogOut size={24} />
                 <Text>Sair</Text>
               </Button>
             </DropdownMenuItem>
