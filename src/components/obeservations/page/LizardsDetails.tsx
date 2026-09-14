@@ -61,7 +61,7 @@ export default function LizardsDetails({
     useQuery(api.runs.list, { observationClientId: lizardId._id }) || [];
 
   return (
-    <View className="flex-1 bg-[#a8d378]">
+    <View className="flex-1 bg-[#f2efe6]">
       {/* Header */}
       <View className="flex flex-row justify-between items-start pt-[2.5rem] px-4 gap-3">
         <Pressable

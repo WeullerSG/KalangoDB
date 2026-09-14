@@ -13,20 +13,20 @@ interface Props {
 export default function BottomNavbar({ active, onChange, onAddPress }: Props) {
   return (
     <View className="absolute bottom-0 left-0 right-0 items-center">
-      <View className="flex-row items-center justify-between w-full bg-[#f2efe6] px-8 pt-4 pb-8 rounded-t-3xl">
+      <View className="flex-row items-center justify-between w-full bg-[#365946] px-8 pt-4 pb-8 rounded-t-3xl">
         <Pressable
           onPress={() => onChange("observations")}
           className="items-center gap-1 w-20"
         >
           <PawPrint
             size={22}
-            color={active === "observations" ? "#365946" : "#9ca3af"}
+            color={active === "observations" ? "#ffffff" : "#8a8e95"}
           />
           <Text
             className={`text-xs text-center ${
               active === "observations"
-                ? "text-[#365946] font-medium"
-                : "text-gray-400"
+                ? "text-[#ffffff] font-medium"
+                : "text-[#8a8e95]"
             }`}
           >
             Observações
@@ -41,11 +41,13 @@ export default function BottomNavbar({ active, onChange, onAddPress }: Props) {
         >
           <Activity
             size={22}
-            color={active === "runs" ? "#365946" : "#9ca3af"}
+            color={active === "runs" ? "#ffffff" : "#8a8e95"}
           />
           <Text
             className={`text-xs text-center ${
-              active === "runs" ? "text-[#365946] font-medium" : "text-gray-400"
+              active === "runs"
+                ? "text-[#ffffff] font-medium"
+                : "text-[#8a8e95]"
             }`}
           >
             Corridas
