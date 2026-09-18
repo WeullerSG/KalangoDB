@@ -56,3 +56,10 @@ export const attachVideoToRun = mutation({
     return args.id;
   },
 });
+
+export const deleteRun = mutation({
+  args: { id: v.id("runs") },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
+  },
+});

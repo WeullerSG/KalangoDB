@@ -63,15 +63,17 @@ interface CardProps {
 export default function RunsCard({ runs, onItemPress }: CardProps) {
   return (
     <View className="gap-3 pb-5">
-      {runs.map((run) => (
-        <RunListItem
-          key={run._id}
-          run={run}
-          onPress={() => {
-            onItemPress?.(run);
-          }}
-        />
-      ))}
+      {runs
+        .sort((a, b) => b._creationTime - a._creationTime)
+        .map((run) => (
+          <RunListItem
+            key={run._id}
+            run={run}
+            onPress={() => {
+              onItemPress?.(run);
+            }}
+          />
+        ))}
     </View>
   );
 }
