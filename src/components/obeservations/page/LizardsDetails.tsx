@@ -1,5 +1,6 @@
 import { relativeTime } from "@/lib/relativeTime";
 import { useQuery } from "convex/react";
+import * as Linking from "expo-linking";
 import {
   Activity,
   ArrowLeft,
@@ -55,6 +56,11 @@ export default function LizardsDetails({
 
   const handleVerCorridas = () => {
     onViewRuns?.(lizardId._id);
+  };
+
+  const abrirNoGoogleMaps = (latitude: any, longitude: any) => {
+    const url = `https://maps.google.com/?q=${latitude},${longitude}`;
+    Linking.openURL(url);
   };
 
   const runs =
@@ -113,6 +119,9 @@ export default function LizardsDetails({
                 {relativeTime(lizardId.notedAt)}
               </Text>
             </View>
+            <Text className="text-[#a0c496] text-sm">
+              Corridas registradas: {runs.length}
+            </Text>
           </View>
 
           {/* Condições + Sexo */}
@@ -137,16 +146,16 @@ export default function LizardsDetails({
 
           {/* Localização */}
           {lizardId.endereco && (
-            <View className="flex-row items-start gap-2">
+            <Pressable
+              className="flex-row items-start gap-2 p-2 rounded-lg active:bg-green-900/10"
+              onPress={() => abrirNoGoogleMaps(lizardId.lat, lizardId.lng)}
+            >
               <MapPin size={16} color="#a0c496" style={{ marginTop: 4 }} />
               <Text className="text-[#a0c496] text-sm flex-1">
                 {lizardId.endereco}
                 {lizardId.cep && ` - ${lizardId.cep}`}
               </Text>
-              <Text className="text-[#a0c496] text-sm">
-                Corridas registradas: {runs.length}
-              </Text>
-            </View>
+            </Pressable>
           )}
 
           {/* Botão: ver corridas desse calango */}
