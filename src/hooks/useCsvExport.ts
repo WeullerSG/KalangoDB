@@ -4,6 +4,7 @@ import Papa from "papaparse";
 const columns = [
   { key: "id", label: "ID" },
   { key: "data", label: "Data" },
+  { key: "dataSoltura", label: "Data de soltura" },
   { key: "local", label: "Local" },
   { key: "exposicaoAoSol", label: "Exposição ao sol" },
   { key: "microhabitat", label: "Microhabitat" },

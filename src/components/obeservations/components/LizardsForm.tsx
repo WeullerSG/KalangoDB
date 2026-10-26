@@ -82,10 +82,35 @@ function joinMicrohabitat(select?: string, outro?: string) {
   return select;
 }
 
+// "26/10/2026" -> timestamp (meio-dia, evita trocar de dia por fuso)
+function parseDataBR(v?: string): number | undefined {
+  const m = v?.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!m) return undefined;
+  const [dia, mes, ano] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const d = new Date(ano, mes - 1, dia, 12);
+  const valida =
+    d.getFullYear() === ano && d.getMonth() === mes - 1 && d.getDate() === dia;
+  return valida ? d.getTime() : undefined;
+}
+
+// timestamp -> "26/10/2026"
+function formatDataBR(ts?: number): string {
+  if (!ts) return "";
+  const d = new Date(ts);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+
 const lizardSchema = z
   .object({
     nome: z.string().min(1, "Nome é obrigatório"),
     notedAt: z.string().min(1, "Data é obrigatória"),
+    dataSoltura: z
+      .string()
+      .optional()
+      .refine((v) => !v?.trim() || parseDataBR(v) !== undefined, {
+        message: "Use o formato DD/MM/AAAA",
+      }),
 
     endereco: z.string().optional(),
     cep: z.string().optional(),
@@ -186,6 +211,7 @@ export default function LizardForm({
       notedAt:
         timestampToLocalInput(notes?.notedAt) ||
         timestampToLocalInput(Date.now()),
+      dataSoltura: formatDataBR(notes?.dataSoltura),
       endereco: notes?.endereco ?? "",
       cep: notes?.cep ?? "",
       lat: toDisplay(notes?.lat),
@@ -218,6 +244,7 @@ export default function LizardForm({
   const geralFields = [
     "nome",
     "notedAt",
+    "dataSoltura",
     "microhabitat",
     "microhabitatOutro",
   ] as const;
@@ -277,6 +304,7 @@ export default function LizardForm({
           id: notes._id,
           nome: values.nome,
           notedAt: new Date(values.notedAt).getTime(),
+          dataSoltura: parseDataBR(values.dataSoltura),
 
           endereco: values.endereco || undefined,
           cep: values.cep || undefined,
@@ -315,6 +343,7 @@ export default function LizardForm({
           clientId: Crypto.randomUUID(),
           nome: values.nome,
           notedAt: new Date(values.notedAt).getTime(),
+          dataSoltura: parseDataBR(values.dataSoltura),
 
           endereco: values.endereco || undefined,
           cep: values.cep || undefined,
@@ -618,6 +647,31 @@ export default function LizardForm({
                     {form.formState.errors.notedAt && (
                       <Text className="text-sm text-red-600">
                         {form.formState.errors.notedAt.message}
+                      </Text>
+                    )}
+                  </View>
+                )}
+              />
+
+              <Controller
+                control={form.control}
+                name="dataSoltura"
+                render={({ field }) => (
+                  <View className="space-y-1">
+                    <Label nativeID="dataSoltura">Data de soltura</Label>
+                    <Input
+                      aria-labelledby="dataSoltura"
+                      placeholder="DD/MM/AAAA"
+                      inputMode="numeric"
+                      maxLength={10}
+                      value={field.value ?? ""}
+                      onChangeText={field.onChange}
+                      onBlur={field.onBlur}
+                      editable={!isSubmitting}
+                    />
+                    {form.formState.errors.dataSoltura && (
+                      <Text className="text-sm text-red-600">
+                        {form.formState.errors.dataSoltura.message}
                       </Text>
                     )}
                   </View>

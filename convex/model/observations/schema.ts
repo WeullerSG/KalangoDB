@@ -5,6 +5,7 @@ export const ObservationsTable = defineTable({
   clientId: v.id("users"),
   nome: v.string(), // "Priscilla"
   notedAt: v.number(),
+  dataSoltura: v.optional(v.number()), // timestamp do dia em que foi solto
 
   // localização
   endereco: v.optional(v.string()),

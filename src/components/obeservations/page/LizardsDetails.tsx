@@ -149,13 +149,25 @@ export default function LizardsDetails({
             </View>
           </View>
 
-          <View>
-            <Text className="text-[#a0c496] text-xs font-semibold uppercase tracking-wider mb-1">
-              Onde foi pego
-            </Text>
-            <Text className="text-white text-sm font-medium">
-              {formatMicrohabitat(lizardId.microhabitat)}
-            </Text>
+          <View className="flex-row gap-4">
+            <View className="flex-1">
+              <Text className="text-[#a0c496] text-xs font-semibold uppercase tracking-wider mb-1">
+                Onde foi pego
+              </Text>
+              <Text className="text-white text-sm font-medium">
+                {formatMicrohabitat(lizardId.microhabitat)}
+              </Text>
+            </View>
+            <View className="flex-1">
+              <Text className="text-[#a0c496] text-xs font-semibold uppercase tracking-wider mb-1">
+                Data de soltura
+              </Text>
+              <Text className="text-white text-sm font-medium">
+                {lizardId.dataSoltura
+                  ? new Date(lizardId.dataSoltura).toLocaleDateString("pt-BR")
+                  : "Não informado"}
+              </Text>
+            </View>
           </View>
 
           {/* Localização */}
