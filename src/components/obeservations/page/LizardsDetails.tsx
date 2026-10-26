@@ -41,6 +41,11 @@ function formatExposicao(exposicao?: string) {
       : "Não informado";
 }
 
+function formatMicrohabitat(microhabitat?: string) {
+  if (!microhabitat) return "Não informado";
+  return microhabitat.charAt(0).toUpperCase() + microhabitat.slice(1);
+}
+
 interface PropsDetails {
   lizardId: Doc<"observations">;
   onBack: () => void;
@@ -142,6 +147,15 @@ export default function LizardsDetails({
                 {formatSexo(lizardId.sexo)}
               </Text>
             </View>
+          </View>
+
+          <View>
+            <Text className="text-[#a0c496] text-xs font-semibold uppercase tracking-wider mb-1">
+              Onde foi pego
+            </Text>
+            <Text className="text-white text-sm font-medium">
+              {formatMicrohabitat(lizardId.microhabitat)}
+            </Text>
           </View>
 
           {/* Localização */}

@@ -17,6 +17,7 @@ export const create = mutation({
     // condições
     exposicaoSol: v.optional(v.string()), // "sol" | "sombra"
     sexo: v.optional(v.string()), // "femea" | "macho"
+    microhabitat: v.optional(v.string()), // onde foi pego
 
     // temperaturas do momento (°C)
     tb: v.optional(v.number()), // temperatura basal
@@ -62,6 +63,7 @@ export const create = mutation({
       // condições
       exposicaoSol: args.exposicaoSol, // "sol" | "sombra"
       sexo: args.sexo, // "femea" | "macho"
+      microhabitat: args.microhabitat,
 
       // temperaturas do momento (°C)
       tb: args.tb, // temperatura basal
@@ -107,6 +109,7 @@ export const update = mutation({
 
     exposicaoSol: v.optional(v.string()),
     sexo: v.optional(v.string()),
+    microhabitat: v.optional(v.string()),
 
     tb: v.optional(v.number()),
     tSubstrato: v.optional(v.number()),

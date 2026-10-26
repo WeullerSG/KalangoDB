@@ -6,6 +6,7 @@ const columns = [
   { key: "data", label: "Data" },
   { key: "local", label: "Local" },
   { key: "exposicaoAoSol", label: "Exposição ao sol" },
+  { key: "microhabitat", label: "Microhabitat" },
   { key: "sexo", label: "Sexo" },
   { key: "tb", label: "Tb" },
   { key: "tSubstrato", label: "Tsubstrato" },
