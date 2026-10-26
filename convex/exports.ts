@@ -40,6 +40,7 @@ export const getUserDataForExport = query({
         local,
 
         exposicaoAoSol: obs.exposicaoSol ?? "",
+        microhabitat: obs.microhabitat ?? "",
         sexo: obs.sexo ?? "",
         tb: obs.tb ?? "",
         tSubstrato: obs.tSubstrato ?? "",

@@ -48,38 +48,80 @@ const decimalString = z
     message: "Valor numérico inválido",
   });
 
-const lizardSchema = z.object({
-  nome: z.string().min(1, "Nome é obrigatório"),
-  notedAt: z.string().min(1, "Data é obrigatória"),
+// onde o calango foi pego; o valor salvo já é o texto que vai pro CSV
+export const microhabitatOptions = [
+  { value: "chão", label: "Chão" },
+  { value: "parede", label: "Parede" },
+  { value: "muro", label: "Muro" },
+  { value: "árvore", label: "Árvore" },
+  { value: "tronco caído", label: "Tronco caído" },
+  { value: "rocha", label: "Rocha" },
+  { value: "arbusto", label: "Arbusto" },
+  { value: "folhiço", label: "Folhiço" },
+  { value: "calçada", label: "Calçada" },
+];
+const MICROHABITAT_OUTRO = "outro";
+const microhabitatSelectOptions = [
+  ...microhabitatOptions,
+  { value: MICROHABITAT_OUTRO, label: "Outro" },
+];
 
-  endereco: z.string().optional(),
-  cep: z.string().optional(),
-  lat: decimalString,
-  lng: decimalString,
+// valor salvo -> estado do formulário (select + texto livre)
+function splitMicrohabitat(saved?: string) {
+  if (!saved) return { microhabitat: "", microhabitatOutro: "" };
+  if (microhabitatOptions.some((o) => o.value === saved)) {
+    return { microhabitat: saved, microhabitatOutro: "" };
+  }
+  return { microhabitat: MICROHABITAT_OUTRO, microhabitatOutro: saved };
+}
 
-  exposicaoSol: z.string().optional(),
-  sexo: z.string().optional(),
+// estado do formulário -> valor salvo
+function joinMicrohabitat(select?: string, outro?: string) {
+  if (!select) return undefined;
+  if (select === MICROHABITAT_OUTRO) return outro?.trim() || undefined;
+  return select;
+}
 
-  tb: decimalString,
-  tSubstrato: decimalString,
-  tAr: decimalString,
+const lizardSchema = z
+  .object({
+    nome: z.string().min(1, "Nome é obrigatório"),
+    notedAt: z.string().min(1, "Data é obrigatória"),
 
-  ctMin: decimalString,
-  ctMax: decimalString,
-  tPref: decimalString,
+    endereco: z.string().optional(),
+    cep: z.string().optional(),
+    lat: decimalString,
+    lng: decimalString,
 
-  crc: decimalString,
-  larguraCorpo: decimalString,
-  alturaCorpo: decimalString,
-  comprimentoCauda: decimalString,
-  comprimentoCabeca: decimalString,
-  alturaCabeca: decimalString,
-  larguraCabeca: decimalString,
-  pataDiantDir: decimalString,
-  pataDiantEsq: decimalString,
-  pataTrasDir: decimalString,
-  pataTrasEsq: decimalString,
-});
+    exposicaoSol: z.string().optional(),
+    sexo: z.string().optional(),
+    microhabitat: z.string().optional(),
+    microhabitatOutro: z.string().optional(),
+
+    tb: decimalString,
+    tSubstrato: decimalString,
+    tAr: decimalString,
+
+    ctMin: decimalString,
+    ctMax: decimalString,
+    tPref: decimalString,
+
+    crc: decimalString,
+    larguraCorpo: decimalString,
+    alturaCorpo: decimalString,
+    comprimentoCauda: decimalString,
+    comprimentoCabeca: decimalString,
+    alturaCabeca: decimalString,
+    larguraCabeca: decimalString,
+    pataDiantDir: decimalString,
+    pataDiantEsq: decimalString,
+    pataTrasDir: decimalString,
+    pataTrasEsq: decimalString,
+  })
+  .refine(
+    (d) =>
+      d.microhabitat !== MICROHABITAT_OUTRO || !!d.microhabitatOutro?.trim(),
+    { message: "Descreva onde foi pego", path: ["microhabitatOutro"] },
+  );
 
 type LizardFormData = z.infer<typeof lizardSchema>;
 type Tab = "geral" | "local" | "temp" | "morfo";
@@ -150,6 +192,7 @@ export default function LizardForm({
       lng: toDisplay(notes?.lng),
       exposicaoSol: notes?.exposicaoSol ?? "",
       sexo: notes?.sexo ?? "",
+      ...splitMicrohabitat(notes?.microhabitat),
       tb: toDisplay(notes?.tb),
       tSubstrato: toDisplay(notes?.tSubstrato),
       tAr: toDisplay(notes?.tAr),
@@ -170,7 +213,14 @@ export default function LizardForm({
     },
   });
 
-  const geralFields = ["nome", "notedAt"] as const;
+  const microhabitatSelecionado = form.watch("microhabitat");
+
+  const geralFields = [
+    "nome",
+    "notedAt",
+    "microhabitat",
+    "microhabitatOutro",
+  ] as const;
   const localFields = [
     "endereco",
     "cep",
@@ -235,6 +285,10 @@ export default function LizardForm({
 
           exposicaoSol: values.exposicaoSol || undefined,
           sexo: values.sexo || undefined,
+          microhabitat: joinMicrohabitat(
+            values.microhabitat,
+            values.microhabitatOutro,
+          ),
 
           tb: toNumber(values.tb),
           tSubstrato: toNumber(values.tSubstrato),
@@ -269,6 +323,10 @@ export default function LizardForm({
 
           exposicaoSol: values.exposicaoSol || undefined,
           sexo: values.sexo || undefined,
+          microhabitat: joinMicrohabitat(
+            values.microhabitat,
+            values.microhabitatOutro,
+          ),
 
           tb: toNumber(values.tb),
           tSubstrato: toNumber(values.tSubstrato),
@@ -648,6 +706,60 @@ export default function LizardForm({
                   )}
                 />
               </View>
+
+              <Controller
+                control={form.control}
+                name="microhabitat"
+                render={({ field }) => (
+                  <View className="space-y-1">
+                    <Label>Onde foi pego (microhabitat)</Label>
+                    <Select
+                      value={findOption(microhabitatSelectOptions, field.value)}
+                      onValueChange={(option) => field.onChange(option?.value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Chão, parede, árvore..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {microhabitatSelectOptions.map((o) => (
+                          <SelectItem
+                            key={o.value}
+                            label={o.label}
+                            value={o.value}
+                          >
+                            {o.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </View>
+                )}
+              />
+
+              {microhabitatSelecionado === MICROHABITAT_OUTRO && (
+                <Controller
+                  control={form.control}
+                  name="microhabitatOutro"
+                  render={({ field }) => (
+                    <View className="space-y-1">
+                      <Label nativeID="microhabitatOutro">Qual local?</Label>
+                      <Input
+                        aria-labelledby="microhabitatOutro"
+                        placeholder="Ex.: poste, cerca, telhado"
+                        value={field.value ?? ""}
+                        onChangeText={field.onChange}
+                        onBlur={field.onBlur}
+                        editable={!isSubmitting}
+                      />
+                      {form.formState.errors.microhabitatOutro && (
+                        <Text className="text-sm text-red-600">
+                          {form.formState.errors.microhabitatOutro.message}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                />
+              )}
             </View>
           )}
 

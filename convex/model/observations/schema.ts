@@ -15,6 +15,7 @@ export const ObservationsTable = defineTable({
   // condições
   exposicaoSol: v.optional(v.string()), // "sol" | "sombra"
   sexo: v.optional(v.string()), // "femea" | "macho"
+  microhabitat: v.optional(v.string()), // onde foi pego: "chão", "parede", "árvore"...
 
   // temperaturas do momento (°C)
   tb: v.optional(v.number()), // temperatura basal
