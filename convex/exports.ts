@@ -37,6 +37,9 @@ export const getUserDataForExport = query({
       rows.push({
         id: obs.nome,
         data: new Date(obs.notedAt).toLocaleDateString("pt-BR"),
+        dataSoltura: obs.dataSoltura
+          ? new Date(obs.dataSoltura).toLocaleDateString("pt-BR")
+          : "",
         local,
 
         exposicaoAoSol: obs.exposicaoSol ?? "",

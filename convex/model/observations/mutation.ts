@@ -7,6 +7,7 @@ export const create = mutation({
     clientId: v.string(), // UUID = idempotência
     nome: v.string(),
     notedAt: v.number(),
+    dataSoltura: v.optional(v.number()),
 
     // localização
     endereco: v.optional(v.string()),
@@ -53,6 +54,7 @@ export const create = mutation({
       clientId,
       nome: args.nome, // "Priscilla"
       notedAt: args.notedAt,
+      dataSoltura: args.dataSoltura,
 
       // localização
       endereco: args.endereco,
@@ -101,6 +103,7 @@ export const update = mutation({
 
     nome: v.string(),
     notedAt: v.number(),
+    dataSoltura: v.optional(v.number()),
 
     endereco: v.optional(v.string()),
     cep: v.optional(v.string()),
